@@ -1,7 +1,10 @@
 import fs from 'fs';
 import Discord from 'discord.js';
 import { BOSS_DATA_DIRECTORY } from '../globals/constants.js';
-import moment from 'moment';
+import moment from 'moment-timezone';
+
+// * Select the timezone
+moment.tz.setDefault('Europe/Madrid');
 
 // * parameters = time
 // * returns a number separated with commas
@@ -151,10 +154,10 @@ export const sendBossAddedEmbed = (
   return isFound;
 };
 
-// * returns current time in hh:mm A format
+// * returns current time in HH:mm format
 export const getCurrentTimeInHMAFormat = () => {
   let currentTime = moment();
-  return moment(currentTime).format('hh:mm A');
+  return moment(currentTime).format('HH:mm');
 };
 
 // * returns current time in default format
@@ -172,7 +175,7 @@ export const convertUnixTimeToCalendarFormat = (time) => moment.unix(time).calen
 
 // * parameters = time in unix
 // * returns time in HMA format
-export const convertUnixTimeToHMAFormat = (time) => moment.unix(time).format('hh:mm A');
+export const convertUnixTimeToHMAFormat = (time) => moment.unix(time).format('HH:mm');
 
 // * parameters = time in seconds
 // * returns = added time in calendar format
