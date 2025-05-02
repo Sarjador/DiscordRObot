@@ -1,5 +1,5 @@
 {
-  "name": "spinkles-bot",
+  "name": "spanishTatami-bot",
   "version": "1.0.0",
   "description": "A discord bot",
   "main": "index.js",
@@ -17,7 +17,7 @@
     "moment": "^2.29.1",
     "moment-timezone": "^0.5.48",
     "nodemon": "^2.0.7",
-    "spinkles-bot": "file:"
+    "spanishTatami-bot": "file:"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.1",
