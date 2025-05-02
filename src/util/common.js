@@ -127,8 +127,8 @@ export const createBossAddedEmbed = (
       { name: 'Max. Respawn', value: maxRespawnTimeCalendarFormat || '--', inline: true },
     )
     .setFooter(
-      `Time of Death: ${getCurrentTimeInHMAFormat()}`,
-      'https://emoji.gg/assets/emoji/9468_ghostplus.gif',
+      `Time of Death: ${getCurrentTimeInHMFormat()}`,
+      'https://file5s.ratemyserver.net/mobs/1179.gif',
     );
   return bossAddedEmbed;
 };
@@ -155,6 +155,12 @@ export const sendBossAddedEmbed = (
 };
 
 // * returns current time in HH:mm format
+export const getCurrentTimeInHMFormat = () => {
+  let currentTime = moment();
+  return moment(currentTime).format('HH:mm');
+};
+
+// * returns current time in HH:mm A format
 export const getCurrentTimeInHMAFormat = () => {
   let currentTime = moment();
   return moment(currentTime).format('HH:mm');
@@ -174,8 +180,13 @@ export const convertToTimestamp = (time) => moment(time).unix();
 export const convertUnixTimeToCalendarFormat = (time) => moment.unix(time).calendar();
 
 // * parameters = time in unix
-// * returns time in HMA format
-export const convertUnixTimeToHMAFormat = (time) => moment.unix(time).format('HH:mm');
+// * returns time in HM format
+export const convertUnixTimeToHMFormat = (time) => moment.unix(time).format('HH:mm');
+
+// * parameters = time in unix
+// * returns time in HM format
+export const convertUnixTimeToHMAFormat = (time) => moment.unix(time).format('HH:MM A');
+
 
 // * parameters = time in seconds
 // * returns = added time in calendar format
