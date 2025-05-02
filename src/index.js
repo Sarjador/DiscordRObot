@@ -6,7 +6,7 @@ import {
   convertToTimestamp,
   convertUnixTimeToCalendarFormat,
   getCurrentTime,
-  getCurrentTimeInHMAFormat,
+  getCurrentTimeInHMFormat,
   readFile,
   writeFile,
 } from './util/common.js';
@@ -45,11 +45,12 @@ const checkMvpRespawnTimers = () => {
             },
           )
           .setFooter(
-            `Current Time: ${getCurrentTimeInHMAFormat()}`,
-            '../img/clock.PNG',
+            `Current Time: ${getCurrentTimeInHMFormat()}`,
+            'https://file5s.ratemyserver.net/mobs/1476.gif'
           );
         reminderChannels.forEach((channel) => {
           channel.send(remindEmbed);
+          channel.send('Happy Hunting to ' + '@everyone'+'! ;)');
         });
         bossList.bosses[i].deathTime = null;
         bossList.bosses[i].minRespawnTime = null;
