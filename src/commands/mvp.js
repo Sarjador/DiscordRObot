@@ -5,12 +5,13 @@ import {
   checkInput,
   getCurrentTime,
   convertToTimestamp,
+  convertUnixTimeToHMFormat,
   convertUnixTimeToHMAFormat,
   sendBossAddedEmbed,
   sortArray,
 } from '../util/common.js';
 export const name = 'mvp';
-export const description = 'Ragnarok Online MVP helper';
+export const description = 'Ragnarok Online MVP Tracker Helper Bot';
 
 export const execute = (message, args, bossList) => {
   let input = '';
@@ -84,11 +85,11 @@ export const execute = (message, args, bossList) => {
         }
       }
     } else {
-      message.channel.send('Please enter at least **3 characters** or the correct **boss alias**');
+      message.channel.send('Por favor, introduce al menos **3 caracteres** o el **alias del MVP** correcto.');
     }
     if (!isFound && isValidInput) {
       message.channel.send(
-        'Boss not found! Please try again with the correct **boss name** or **alias**.',
+        'MVP no encontrado! Por favor, vuelve a intentarlo con el **nombre** correcto o el **alias del MVP**.',
       );
     }
   } else if (args[0] === 'list') {
@@ -112,7 +113,7 @@ export const execute = (message, args, bossList) => {
       message.channel.send(txt);
     } else {
       message.channel.send(
-        '⚠️ There is **no** MVP list! Enter `$mvp add <bossname>` to add a MVP into the list',
+        '⚠️ Aún **no** hay ningún MVP en la lista! Escribe `$mvp add <bossname>` para agregar uno a la lista.',
       );
     }
   } else if (args[0] === 'clear') {
@@ -124,10 +125,10 @@ export const execute = (message, args, bossList) => {
       }
     }
     currentMVPList = null;
-    message.channel.send('✅ MVP List has been cleared **successfully**!');
+    message.channel.send('✅ La lista MVP se ha borrado con **éxito**!');
   } else {
     message.channel.send(
-      '⚠️ Command **does not exist**! Please enter `$help` for the list of bot commands.',
+      '⚠️ El commando **no existe**! Escribe `$help` para ver una lista completa de los comandos disponibles.',
     );
   }
 };
@@ -141,17 +142,18 @@ const setupBossAddedEmbed = (
   isFound,
   message,
 ) => {
-  let minRespawnTimeInCalendar;
-  let maxRespawnTimeInCalendar;
-
-  minRespawnTimeInCalendar = addTimeInSecondsToCalendarFormat(minRespawnTimeScheduleInSeconds);
-  maxRespawnTimeInCalendar = addTimeInSecondsToCalendarFormat(maxRespawnTimeScheduleInSeconds);
+  let minRespawnTimeIn24H;
+  let maxRespawnTimeIn24H;
+  
+  // Agregamos los segundos al formato Unix y luego lo pasamos a formato HH:mm
+  minRespawnTimeIn24H = convertUnixTimeToHMFormat(addTimeInSecondsToUnixFormat(minRespawnTimeScheduleInSeconds));
+  maxRespawnTimeIn24H = convertUnixTimeToHMFormat(addTimeInSecondsToUnixFormat(maxRespawnTimeScheduleInSeconds));
 
   isFound = sendBossAddedEmbed(
     message,
     bossList,
-    minRespawnTimeInCalendar,
-    maxRespawnTimeInCalendar,
+    minRespawnTimeIn24H,
+    maxRespawnTimeIn24H,
     isFound,
   );
 

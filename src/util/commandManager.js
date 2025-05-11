@@ -7,10 +7,10 @@ const commandFiles = fs.readdirSync(COMMANDS_DIRECTORY)
 
 export const loadCommands = async (discordClient) => {
   discordClient.commands = new Discord.Collection();
-  console.log("Loading commands...");
+  console.log("Cargando los comandos...");
   for (const fileName of commandFiles) {
     const command = await import(`../commands/${fileName}`);
     discordClient.commands.set(command.name, command);
   }
-  console.log("Loaded all commands...");
+  console.log("Todos los commandos cargados...");
 };

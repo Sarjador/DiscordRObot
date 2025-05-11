@@ -46,4 +46,4 @@ To view the list of the current MVPs with a respawn time schedule.
 To clear all contents in the MVP list.
 This command should **ONLY** be used when there is a server restart
 
-> Spanish Tatami discord Bot is based on Sprinkles from 🌺 Xaikyu 🌺#3108 and Jeee#0016 and modified by me (Sarjador).
+> Spanish Tatami MVP Tracker Discord Bot is based on Sprinkles from 🌺 Xaikyu 🌺#3108 and Jeee#0016, updated and translated by Sarjador.

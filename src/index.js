@@ -5,6 +5,7 @@ import * as commandManager from './util/commandManager.js';
 import {
   convertToTimestamp,
   convertUnixTimeToCalendarFormat,
+  convertUnixTimeToHMFormat,
   getCurrentTime,
   getCurrentTimeInHMFormat,
   readFile,
@@ -27,34 +28,70 @@ const checkMvpRespawnTimers = () => {
   setInterval(() => {
     let currentTime = convertToTimestamp(getCurrentTime());
     for (let i = 0; i < bossList.bosses.length; i++) {
-      if (bossList.bosses[i].deathTime && currentTime >= bossList.bosses[i].minRespawnTime) {
-        const remindEmbed = new Discord.MessageEmbed()
-          .setColor('#0x43a047')
-          .setTitle(`${bossList.bosses[i].bossName} respawn schedule is now **UP!** `)
+
+      // → AVISO a 5 minutos
+      // Ajusta 5*60 si tus timestamps están en segundos, o 5*60*1000 si son milisegundos.
+      const fiveMinThreshold = bossList.bosses[i].minRespawnTime - 5 * 60;
+      if (!bossList.bosses[i].fiveMinWarningSent &&
+          currentTime >= fiveMinThreshold &&
+          currentTime < bossList.bosses[i].minRespawnTime
+      ) {
+        const warningEmbed = new Discord.MessageEmbed()
+          .setColor('#FFA500')
+          .setTitle(`⚠️Faltan 5 min. para que respawnee **${bossList.bosses[i].bossName}**⚠️`)
           .setThumbnail(bossList.bosses[i].imageUrl)
           .addFields(
             {
               name: 'Min. Respawn',
-              value: convertUnixTimeToCalendarFormat(bossList.bosses[i].minRespawnTime) || '--',
+              value: convertUnixTimeToHMFormat(bossList.bosses[i].minRespawnTime) || '--',
               inline: true,
             },
             {
               name: 'Max. Respawn',
-              value: convertUnixTimeToCalendarFormat(bossList.bosses[i].maxRespawnTime) || '--',
+              value: convertUnixTimeToHMFormat(bossList.bosses[i].maxRespawnTime) || '--',
               inline: true,
             },
           )
           .setFooter(
-            `Current Time: ${getCurrentTimeInHMFormat()}`,
+            `Hora Actual: ${getCurrentTimeInHMFormat()}`,
+            'https://file5s.ratemyserver.net/mobs/1476.gif'
+          );
+        reminderChannels.forEach((channel) => {
+          channel.send(warningEmbed);
+          channel.send('@everyone calienta, que sales! 🏃‍♂️💨');
+        });
+        bossList.bosses[i].fiveMinWarningSent = true;
+      }
+
+      if (bossList.bosses[i].deathTime && currentTime >= bossList.bosses[i].minRespawnTime) {
+        const remindEmbed = new Discord.MessageEmbed()
+          .setColor('#0x43a047')
+          .setTitle(`El MVP ${bossList.bosses[i].bossName} va a respawnear **¡YA!** `)
+          .setThumbnail(bossList.bosses[i].imageUrl)
+          .addFields(
+            {
+              name: 'Min. Respawn',
+              value: convertUnixTimeToHMFormat(bossList.bosses[i].minRespawnTime) || '--',
+              inline: true,
+            },
+            {
+              name: 'Max. Respawn',
+              value: convertUnixTimeToHMFormat(bossList.bosses[i].maxRespawnTime) || '--',
+              inline: true,
+            },
+          )
+          .setFooter(
+            `Hora Actual: ${getCurrentTimeInHMFormat()}`,
             'https://file5s.ratemyserver.net/mobs/1476.gif'
           );
         reminderChannels.forEach((channel) => {
           channel.send(remindEmbed);
-          channel.send('Happy Hunting to ' + '@everyone'+'! ;)');
+          channel.send('@everyone'+' a darle estopa! ;)');
         });
         bossList.bosses[i].deathTime = null;
         bossList.bosses[i].minRespawnTime = null;
         bossList.bosses[i].maxRespawnTime = null;
+        bossList.bosses[i].fiveMinWarningSent = false;
       }
     }
   }, 1000);
@@ -78,14 +115,14 @@ const onMessageReceived = (message) => {
     discordClient.commands.get('info').execute(message, args, bossList);
   } else if (command == 'set-reminder-channel') {
     if (reminderChannels.filter((channel) => channel.id === message.channel.id).length > 0) {
-      message.channel.send('[FAILED] MVP reminders are already being sent in this channel');
+      message.channel.send('[ERROR] Los recordatorios MVP ya se estan enviando a este canal.');
     } else {
       reminderChannels.push(message.channel);
-      message.channel.send('[SUCCESS] MVP reminders are now sent in this channel');
+      message.channel.send('[SUCCESS] Los recordatorios MVP se enviarán a este canal a partir de ahora.');
     }
   } else {
     message.channel.send(
-      'Command **does not exist**! Please enter `$help` for the list of bot commands.',
+      '⚠️ El commando **no existe**! Escribe `$help` para ver una lista completa de los comandos disponibles.',
     );
   }
 };
