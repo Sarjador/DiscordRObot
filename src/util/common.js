@@ -18,9 +18,9 @@ export const convertSecondstoHMS = (time) => {
   var m = Math.floor((time % 3600) / 60);
   var s = Math.floor((time % 3600) % 60);
 
-  var hDisplay = h > 0 ? h + (h == 1 ? ' hour ' : ' hours ') : '';
-  var mDisplay = m > 0 ? m + (m == 1 ? ' minute ' : ' minutes ') : '';
-  var sDisplay = s > 0 ? s + (s == 1 ? ' second' : ' seconds') : '';
+  var hDisplay = h > 0 ? h + (h == 1 ? ' hora ' : ' horas ') : '';
+  var mDisplay = m > 0 ? m + (m == 1 ? ' minuto ' : ' minutos ') : '';
+  var sDisplay = s > 0 ? s + (s == 1 ? ' segundo' : ' segundos') : '';
   return hDisplay + mDisplay + sDisplay;
 };
 
@@ -82,10 +82,10 @@ export const createBossInfoEmbed = ({
     .setThumbnail(imageUrl)
     .addFields(
       { name: 'HP', value: addNumberWithCommas(HP) || '--' },
-      { name: 'Location', value: location || '--' },
-      { name: 'Race', value: race || '--', inline: true },
+      { name: 'Ubicación', value: location || '--' },
+      { name: 'Raza', value: race || '--', inline: true },
       { name: '\u200B', value: '\u200B', inline: true },
-      { name: 'Property', value: property || '--', inline: true },
+      { name: 'Tipo', value: property || '--', inline: true },
       {
         name: 'Min. Respawn',
         value: convertSecondstoHMS(minRespawnTimeScheduleInSeconds) || '--',
@@ -121,13 +121,13 @@ export const createBossAddedEmbed = (
     .setTitle(bossName)
     .setThumbnail(imageUrl)
     .addFields(
-      { name: 'Location', value: location || '--' },
+      { name: 'Ubicación', value: location || '--' },
       { name: 'Min. Respawn', value: minRespawnTimeCalendarFormat || '--', inline: true },
       { name: '\u200B', value: '\u200B', inline: true },
       { name: 'Max. Respawn', value: maxRespawnTimeCalendarFormat || '--', inline: true },
     )
     .setFooter(
-      `Time of Death: ${getCurrentTimeInHMFormat()}`,
+      `Hora de la Muerte: ${getCurrentTimeInHMFormat()}`,
       'https://file5s.ratemyserver.net/mobs/1179.gif',
     );
   return bossAddedEmbed;
@@ -146,9 +146,9 @@ export const sendBossAddedEmbed = (
     createBossAddedEmbed(data, minRespawnTimeCalendarFormat, maxRespawnTimeCalendarFormat),
   );
   message.channel.send(
-    `MVP added successfully!\nI will remind you in **${convertSecondstoHMS(
+    `¡MVP agregado al tracker con éxito!\n¡Avisaré dentro de **${convertSecondstoHMS(
       data.minRespawnTimeScheduleInSeconds,
-    )}**!`,
+    )}**!\nTambién avisaré cuando falten **5 minutos** para que respawnee.`,
   );
   isFound = true;
   return isFound;
@@ -160,10 +160,10 @@ export const getCurrentTimeInHMFormat = () => {
   return moment(currentTime).format('HH:mm');
 };
 
-// * returns current time in HH:mm A format
+// * returns current time in HH:MM A format
 export const getCurrentTimeInHMAFormat = () => {
   let currentTime = moment();
-  return moment(currentTime).format('HH:mm');
+  return moment(currentTime).format('HH:MM');
 };
 
 // * returns current time in default format
@@ -184,7 +184,7 @@ export const convertUnixTimeToCalendarFormat = (time) => moment.unix(time).calen
 export const convertUnixTimeToHMFormat = (time) => moment.unix(time).format('HH:mm');
 
 // * parameters = time in unix
-// * returns time in HM format
+// * returns time in HM A format
 export const convertUnixTimeToHMAFormat = (time) => moment.unix(time).format('HH:MM A');
 
 
@@ -205,9 +205,9 @@ export const writeFile = (filename, data) => {
   let jsonString = JSON.stringify(data);
   fs.writeFile(filename, jsonString, (err) => {
     if (err) {
-      console.log('Error in writing file!', err);
+      console.log('Error al escribir el fichero!', err);
     } else {
-      console.log(`Successfully wrote the file in ${filename}`);
+      console.log(`Se ha escrito correctamente sobre el fichero ${filename}`);
     }
   });
 };

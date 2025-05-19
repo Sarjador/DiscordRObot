@@ -1,10 +1,10 @@
 # Spanish Tatami Discord Bot
-Spanish Tatami is a Discord bot that aims to be a MVP helper for Ragnarok Online.
+Spanish Tatami es un bot para Discord que trata de ayudar con los tiempos de respaen de los MVPs en Ragnarok Online.
 
 ## Features
-- Show boss information (RMS-based)
-- Creates a list of bosses currently being held by the player
-- Creates a reminder when the respawn time for a boss is starting
+- Muestra información de MVPs (basado en RMS)
+- Crear una lista de MVPs que actualmente están bajo seguimiento por el jugador
+- Crear un recordatorio que avisará (si previamente se ha usado el comando $set-reminder-channel) cuando quede poco para que reaparezca un MVP bajo seguimiento.
 
 ## Commands
 ```
@@ -16,34 +16,34 @@ $mvp clear
 ```
 
 ### $help
-To view all the available bot commands.
+Para ver una lista con todos los comandos disponibles.
 
 ### $info "bossname"
 ![info](img/info.PNG)
 
 
-To view the information of a specific boss.
+Para ver información sobre un MVP específico.
 
 ### $mvp add "bossname"
 ![info](img/add.PNG)
 
 
-To add a boss into the MVP list.
+Para agregar un MVP a la lista de seguimiento.
 
 
 ![info](img/remind.PNG)
 
 
-This will also set a reminder on the boss' scheduled respawn time.
+Esto también genera automáticamente los recordatorios para avisar cuando el MVP vaya a respawnear.
 
 ### $mvp list
 ![info](img/list.PNG)
 
 
-To view the list of the current MVPs with a respawn time schedule.
+Para ver una lista de los MVPs que actualmente estan bajo seguimiento.
 
 #### $mvp clear
-To clear all contents in the MVP list.
-This command should **ONLY** be used when there is a server restart
+Limpia la lista de seguimiento de los MVPs.
+Este comando debería usarse **SOLO** cuando el server haya sufrido un reinicio (caída, mantenimiento, etc.)
 
-> Spanish Tatami discord Bot is based on Sprinkles from 🌺 Xaikyu 🌺#3108 and Jeee#0016 and modified by me (Sarjador).
+> Spanish Tatami MVP Tracker Discord Bot esta basado en Sprinkles de 🌺 Xaikyu 🌺#3108 y Jeee#0016, actualizado y traducido por Sarjador.

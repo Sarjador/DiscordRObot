@@ -1,7 +1,7 @@
 import { checkAlias, checkInput, sendBossInfoEmbed } from '../util/common.js';
 
 export const name = 'info';
-export const description = 'To check boss information';
+export const description = 'Para comprobar la información sobre un MVP.';
 
 export const execute = (message, args, bossList) => {
   let input = args.join(' ');
@@ -28,10 +28,10 @@ export const execute = (message, args, bossList) => {
       }
     }
   } else {
-    message.channel.send('Please enter at least **3 characters** or the correct **boss alias**');
+    message.channel.send('Por favor, introduce al menos **3 caracteres** o el **alias del MVP** correcto.');
   }
 
   if (!isFound && isValidInput) {
-    message.channel.send('Boss not found! Please try again.');
+    message.channel.send('MVP no encontrado! Vuelve a intentarlo.');
   }
 };
