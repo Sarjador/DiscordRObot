@@ -115,6 +115,7 @@ export const createBossAddedEmbed = (
   { bossName, location, imageUrl },
   minRespawnTimeCalendarFormat,
   maxRespawnTimeCalendarFormat,
+  deathTimeMsg,
 ) => {
   const bossAddedEmbed = new Discord.MessageEmbed()
     .setColor('#0xf44336')
@@ -127,13 +128,13 @@ export const createBossAddedEmbed = (
       { name: 'Max. Respawn', value: maxRespawnTimeCalendarFormat || '--', inline: true },
     )
     .setFooter(
-      `Hora de la Muerte: ${getCurrentTimeInHMFormat()}`,
+      `Hora de la Muerte: ${deathTimeMsg}`,
       'https://file5s.ratemyserver.net/mobs/1179.gif',
     );
   return bossAddedEmbed;
 };
 
-// * parameters = message, boss data, min respawn time, max respawn time, isFound
+// * parameters = message, boss data, min respawn time, max respawn time, isFound, customTime
 // * returns isFound result and sends boss info embed
 export const sendBossAddedEmbed = (
   message,
@@ -141,15 +142,28 @@ export const sendBossAddedEmbed = (
   minRespawnTimeCalendarFormat,
   maxRespawnTimeCalendarFormat,
   isFound,
+  customTime = null
 ) => {
+  // Si hay un tiempo personalizado, lo utilizamos en el embed
+  const deathTimeMsg = customTime || getCurrentTimeInHMFormat();
+  
   message.channel.send(
-    createBossAddedEmbed(data, minRespawnTimeCalendarFormat, maxRespawnTimeCalendarFormat),
+    createBossAddedEmbed(data, minRespawnTimeCalendarFormat, maxRespawnTimeCalendarFormat, deathTimeMsg),
   );
-  message.channel.send(
-    `¡MVP agregado al tracker con éxito!\n¡Avisaré dentro de **${convertSecondstoHMS(
-      data.minRespawnTimeScheduleInSeconds,
-    )}**!\nTambién avisaré cuando falten **5 minutos** para que respawnee.`,
-  );
+
+  let successMsg = `¡MVP agregado al tracker con éxito!\n¡Avisaré dentro de **${convertSecondstoHMS(
+    data.minRespawnTimeScheduleInSeconds
+  )}**!\nTambién avisaré cuando falten **5 minutos** para que respawnee.`;
+  
+  // Si se usó una hora personalizada, mencionarlo en el mensaje
+  if (customTime) {
+    successMsg = `¡MVP agregado al tracker con hora personalizada (${customTime})!\n¡Avisaré dentro de **${convertSecondstoHMS(
+      data.minRespawnTimeScheduleInSeconds
+    )}**!\nTambién avisaré cuando falten **5 minutos** para que respawnee.`;
+  }
+  
+  message.channel.send(successMsg);
+
   isFound = true;
   return isFound;
 };
@@ -192,9 +206,17 @@ export const convertUnixTimeToHMAFormat = (time) => moment.unix(time).format('HH
 // * returns = added time in calendar format
 export const addTimeInSecondsToCalendarFormat = (time) => moment().add(time, 'seconds').calendar();
 
-// * parameters = time in seconds
+// * parameters = time in seconds, baseTimestamp (opcional)
 // * returns = added time in unix format
-export const addTimeInSecondsToUnixFormat = (time) => moment().add(time, 'seconds').unix();
+export const addTimeInSecondsToUnixFormat = (time, baseTimestamp = null) => {
+  if (baseTimestamp) {
+    // Si se proporciona un timestamp base, lo usamos como punto de partida
+    return moment.unix(baseTimestamp).add(time, 'seconds').unix();
+  } else {
+    // Comportamiento original (usa el tiempo actual)
+    return moment().add(time, 'seconds').unix();
+  }
+};
 
 // * parameters = time in seconds
 // * returns time in milliseconds
