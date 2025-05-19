@@ -28,8 +28,7 @@ const helpEmbed = {
     },
     {
       name: '$mvp add <bossname> [HH:MM]',
-      value:
-        "Para agregar un MVP a la lista. Opcionalmente puedes especificar la hora (formato 24h) en que murió el MVP.\nEjemplo: $mvp add TestMob 18:07\nEsto también establecerá un recordatorio de la hora de reaparición del MVP.",
+      value: 'Para agregar un MVP a la lista. Opcionalmente puedes especificar la hora (formato 24h) en que murió el MVP.\nEjemplo: $mvp add TestMob 18:07\nEsto también establecerá un recordatorio de la hora de reaparición del MVP.',
     },
     {
       name: '$mvp list',

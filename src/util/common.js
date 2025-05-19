@@ -139,30 +139,43 @@ export const createBossAddedEmbed = (
 export const sendBossAddedEmbed = (
   message,
   data,
-  minRespawnTimeCalendarFormat,
-  maxRespawnTimeCalendarFormat,
+  minRespawnTimeIn24H,
+  maxRespawnTimeIn24H,
   isFound,
-  customTime = null
+  customTime = null,
+  timeToShow = null,
 ) => {
+  // Preparar el mensaje de tiempo restante
+  const timeRemainingStr = convertSecondstoHMS(timeToShow);
+
   // Si hay un tiempo personalizado, lo utilizamos en el embed
-  const deathTimeMsg = customTime || getCurrentTimeInHMFormat();
-  
+  const deathTimeMsg = timeRemainingStr || getCurrentTimeInHMFormat();
+
   message.channel.send(
-    createBossAddedEmbed(data, minRespawnTimeCalendarFormat, maxRespawnTimeCalendarFormat, deathTimeMsg),
+    createBossAddedEmbed(
+      data,
+      minRespawnTimeIn24H,
+      maxRespawnTimeIn24H,
+      customTime || getCurrentTimeInHMFormat(),
+    ),
   );
 
-  let successMsg = `¡MVP agregado al tracker con éxito!\n¡Avisaré dentro de **${convertSecondstoHMS(
-    data.minRespawnTimeScheduleInSeconds
-  )}**!\nTambién avisaré cuando falten **5 minutos** para que respawnee.`;
-  
-  // Si se usó una hora personalizada, mencionarlo en el mensaje
-  if (customTime) {
-    successMsg = `¡MVP agregado al tracker con hora personalizada (${customTime})!\n¡Avisaré dentro de **${convertSecondstoHMS(
-      data.minRespawnTimeScheduleInSeconds
-    )}**!\nTambién avisaré cuando falten **5 minutos** para que respawnee.`;
+  // Mensaje basado en si ya pasó el tiempo de respawn o no
+  if (timeToShow <= 0) {
+    message.channel.send(
+      `¡MVP agregado al tracker con éxito (hora: ${customTime})!\n¡El tiempo de respawn ya ha pasado! El MVP debería estar disponible **ahora**!\nNo se enviarán recordatorios para este MVP.`,
+    );
+  } else {
+    let successMsg = `¡MVP agregado al tracker con éxito!\n¡Avisaré dentro de **${convertSecondstoHMS(
+      data.minRespawnTimeScheduleInSeconds,
+    )}**!\nTambién avisaré cuando falten **5 minutos** para que reaparezca.`;
+
+    // Si se usó una hora personalizada, mencionarlo en el mensaje
+    if (customTime) {
+      successMsg = `¡MVP agregado al tracker con hora personalizada (${customTime})!\n¡Avisaré dentro de **${timeRemainingStr}**!\nTambién avisaré cuando falten **5 minutos** para que reaparezca.`;
+    }
+    message.channel.send(successMsg);
   }
-  
-  message.channel.send(successMsg);
 
   isFound = true;
   return isFound;
@@ -200,7 +213,6 @@ export const convertUnixTimeToHMFormat = (time) => moment.unix(time).format('HH:
 // * parameters = time in unix
 // * returns time in HM A format
 export const convertUnixTimeToHMAFormat = (time) => moment.unix(time).format('HH:MM A');
-
 
 // * parameters = time in seconds
 // * returns = added time in calendar format

@@ -1,5 +1,4 @@
 import {
-  addTimeInSecondsToUnixFormat,
   checkAlias,
   checkInput,
   getCurrentTime,
@@ -69,19 +68,14 @@ export const execute = (message, args, bossList) => {
             customTime
           );
 
-          //  Change deathTime, minRespawn and maxRespawn in bossList file
-          minRespawnTime = addTimeInSecondsToUnixFormat(
-            bossList.bosses[i].minRespawnTimeScheduleInSeconds,
-            deathTimeInUnix
-          );
-          maxRespawnTime = addTimeInSecondsToUnixFormat(
-            bossList.bosses[i].maxRespawnTimeScheduleInSeconds,
-            deathTimeInUnix
-          );
+          // Calcular los tiempos de respawn directamente a partir del tiempo de muerte
+          minRespawnTime = deathTimeInUnix + bossList.bosses[i].minRespawnTimeScheduleInSeconds;
+          maxRespawnTime = deathTimeInUnix + bossList.bosses[i].maxRespawnTimeScheduleInSeconds;
 
           bossList.bosses[i].deathTime = deathTimeInUnix;
           bossList.bosses[i].minRespawnTime = minRespawnTime;
           bossList.bosses[i].maxRespawnTime = maxRespawnTime;
+          bossList.bosses[i].fiveMinWarningSent = false; // Reiniciamos el flag de aviso
           break;
 
         } else if (isValidAlias) {
@@ -102,20 +96,15 @@ export const execute = (message, args, bossList) => {
                 message,
                 customTime
               );
-              //  Change deathTime, minRespawn and maxRespawn in bossList file
 
-              minRespawnTime = addTimeInSecondsToUnixFormat(
-                bossList.bosses[i].minRespawnTimeScheduleInSeconds,
-                deathTimeInUnix
-              );
-              maxRespawnTime = addTimeInSecondsToUnixFormat(
-                bossList.bosses[i].maxRespawnTimeScheduleInSeconds,
-                deathTimeInUnix
-              );
+              // Calcular los tiempos de respawn directamente a partir del tiempo de muerte
+              minRespawnTime = deathTimeInUnix + bossList.bosses[i].minRespawnTimeScheduleInSeconds;
+              maxRespawnTime = deathTimeInUnix + bossList.bosses[i].maxRespawnTimeScheduleInSeconds;
 
               bossList.bosses[i].deathTime = deathTimeInUnix;
               bossList.bosses[i].minRespawnTime = minRespawnTime;
               bossList.bosses[i].maxRespawnTime = maxRespawnTime;
+              bossList.bosses[i].fiveMinWarningSent = false; // Reiniciamos el flag de aviso
             }
           }
         }
@@ -149,7 +138,7 @@ export const execute = (message, args, bossList) => {
       message.channel.send(txt);
     } else {
       message.channel.send(
-        '⚠️ Aún **no** hay ningún MVP en la lista! Escribe `$mvp add <bossname>` para agregar uno a la lista.',
+        '⚠️ Aún **no** hay ningún MVP en la lista! Escribe `$mvp add <bossname> [HH:mm]` para agregar uno a la lista.',
       );
     }
   } else if (args[0] === 'clear') {
@@ -158,7 +147,7 @@ export const execute = (message, args, bossList) => {
         bossList.bosses[i].minRespawnTime = null;
         bossList.bosses[i].maxRespawnTime = null;
         bossList.bosses[i].deathTime = null
-        bossList.bosses[i].fiveMinWarningSent = false;
+        bossList.bosses[i].fiveMinWarningSent = false; // Reiniciamos el flag de aviso
       }
     }
     currentMVPList = null;
@@ -185,11 +174,11 @@ function getCustomTimeInUnix(timeString) {
   // Si la hora proporcionada ya ha pasado hoy, consideramos dos opciones:
   const now = new Date();
   if (customTime < now) {
-    // Si la diferencia es grande (más de 30 minutos), asumimos que es para mañana
-    if ((now - customTime) > 30 * 60 * 1000) {
+    // Si la diferencia es grande (más de 4 horas), asumimos que es para mañana
+    if ((now - customTime) > 240 * 60 * 1000) {
       customTime.setDate(customTime.getDate() + 1);
     }
-    // Si es menos de 30 minutos, asumimos que es tiempo reciente y lo dejamos tal cual
+    // Si es menos de 4 horas, asumimos que es tiempo reciente y lo dejamos tal cual
   }
   
   return convertToTimestamp(customTime);
@@ -205,19 +194,24 @@ const setupBossAddedEmbed = (
   message,
   customTime = null
 ) => {
-  let minRespawnTimeIn24H;
-  let maxRespawnTimeIn24H;
   
-  // Si hay un tiempo personalizado, lo mostramos en el mensaje
-  let deathTimeMsg = '';
-  if (customTime) {
-    deathTimeMsg = ` (registrado para las ${customTime})`;
-  }
-
-  // Agregamos los segundos al formato Unix y luego lo pasamos a formato HH:mm
+  // Obtener el timestamp Unix para la hora de muerte (actual o personalizada)
   const deathTimeInUnix = customTime ? getCustomTimeInUnix(customTime) : convertToTimestamp(getCurrentTime());
-  minRespawnTimeIn24H = convertUnixTimeToHMFormat(addTimeInSecondsToUnixFormat(minRespawnTimeScheduleInSeconds, deathTimeInUnix));
-  maxRespawnTimeIn24H = convertUnixTimeToHMFormat(addTimeInSecondsToUnixFormat(maxRespawnTimeScheduleInSeconds, deathTimeInUnix));
+
+  // Calcular los tiempos de respawn a partir del tiempo de muerte
+  const minRespawnTimeUnix = deathTimeInUnix + minRespawnTimeScheduleInSeconds;
+  const maxRespawnTimeUnix = deathTimeInUnix + maxRespawnTimeScheduleInSeconds;
+
+  // Convertir los timestamps Unix de respawn a formato HH:mm
+  const minRespawnTimeIn24H = convertUnixTimeToHMFormat(minRespawnTimeUnix);
+  const maxRespawnTimeIn24H = convertUnixTimeToHMFormat(maxRespawnTimeUnix);
+ 
+  // Calcular el tiempo restante hasta el respawn
+  const currentTimeInUnix = convertToTimestamp(getCurrentTime());
+  const remainingTimeInSeconds = minRespawnTimeUnix - currentTimeInUnix;
+  
+  // Asegurarnos de que no mostramos tiempo negativo
+  const timeToShow = Math.max(0, remainingTimeInSeconds);
 
   isFound = sendBossAddedEmbed(
     message,
@@ -225,7 +219,8 @@ const setupBossAddedEmbed = (
     minRespawnTimeIn24H,
     maxRespawnTimeIn24H,
     isFound,
-    customTime
+    customTime,
+    timeToShow
   );
 
   return isFound;
