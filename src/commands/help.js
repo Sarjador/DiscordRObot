@@ -15,7 +15,7 @@ const helpEmbed = {
   color: 0xd8bfdd,
   title: 'Spanish Tatami MVP Tracker Helper Bot Commands',
   thumbnail: {
-    url: '../../img/bot_avatar.jpg',
+    url: 'https://file5s.ratemyserver.net/skill_icons/nv_basic.gif',
   },
   fields: [
     {
@@ -38,10 +38,10 @@ const helpEmbed = {
     {
       name: '$mvp clear',
       value:
-        'Para limpiar todos los MVP de la lista. \nRecomendado: Usar **SOLO** cuando haya en reinicio del server',
+        'Para limpiar todos los MVP de la lista. \nRecomendado: Usar **SOLO** cuando haya un reinicio del server (caída, mantenimiento, etc.).',
     },
   ],
   footer: {
-    text: '> Spanish Tatami MVP Tracker Discord Bot is based on Sprinkles from 🌺 Xaikyu 🌺#3108 and Jeee#0016, updated and translated by Sarjador.',
+    text: '> Spanish Tatami MVP Tracker Discord Bot esta basado en Sprinkles de 🌺 Xaikyu 🌺#3108 y Jeee#0016, actualizado y traducido por Sarjador.',
   },
 };
