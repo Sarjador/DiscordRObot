@@ -6,6 +6,34 @@ import moment from 'moment-timezone';
 // * Select the timezone
 moment.tz.setDefault('Europe/Madrid');
 
+// Función para convertir una hora específica (HH:MM) de Brasil a timestamp Unix en hora española
+function getCustomTimeInUnix(timeString) {
+  const [hours, minutes] = timeString.split(':').map(Number);
+
+  // Crear la fecha/hora en timezone de São Paulo (Brasil) para HOY (ROLatam)
+  let brasilTime = moment.tz('America/Sao_Paulo').set({
+    hour: hours,
+    minute: minutes,
+    second: 0,
+    millisecond: 0
+  });
+  // Si la hora proporcionada ya ha pasado hoy en Brasil, consideramos dos opciones:
+  const nowInBrasil = moment.tz('America/Sao_Paulo');
+  if (brasilTime.isBefore(nowInBrasil)) {
+    // Si la diferencia es grande (más de 4 horas), asumimos que es para mañana
+    if (nowInBrasil.diff(brasilTime, 'hours') > 4) {
+      brasilTime.add(1, 'day');
+    }
+  }
+   // Convertir a timezone de Madrid (España)
+  const spainTime = brasilTime.clone().tz('Europe/Madrid');
+  
+  console.log(`Hora Brasil: ${brasilTime.format('HH:mm DD/MM')} -> Hora España: ${spainTime.format('HH:mm DD/MM')}`);
+  
+  return spainTime.unix();
+}
+
+
 // * parameters = time
 // * returns a number separated with commas
 export const addNumberWithCommas = (x) => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -149,14 +177,14 @@ export const sendBossAddedEmbed = (
   const timeRemainingStr = convertSecondstoHMS(timeToShow);
 
   // Si hay un tiempo personalizado, lo utilizamos en el embed
-  const deathTimeMsg = timeRemainingStr || getCurrentTimeInHMFormat();
+  const deathTimeMsg = customTime || getCurrentTimeInHMFormat();
 
   message.channel.send(
     createBossAddedEmbed(
       data,
       minRespawnTimeIn24H,
       maxRespawnTimeIn24H,
-      customTime || getCurrentTimeInHMFormat(),
+      deathTimeMsg,
     ),
   );
 
@@ -178,6 +206,7 @@ export const sendBossAddedEmbed = (
   }
 
   isFound = true;
+  
   return isFound;
 };
 

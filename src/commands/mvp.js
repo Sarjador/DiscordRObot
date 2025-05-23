@@ -8,6 +8,8 @@ import {
   sendBossAddedEmbed,
   sortArray,
 } from '../util/common.js';
+import moment from 'moment-timezone';
+
 export const name = 'mvp';
 export const description = 'Ragnarok Online MVP Tracker Helper Bot';
 
@@ -196,7 +198,19 @@ const setupBossAddedEmbed = (
 ) => {
   
   // Obtener el timestamp Unix para la hora de muerte (actual o personalizada)
-  const deathTimeInUnix = customTime ? getCustomTimeInUnix(customTime) : convertToTimestamp(getCurrentTime());
+  let deathTimeInUnix;
+  let displayTime;
+
+  if (customTime) {
+    deathTimeInUnix = getCustomTimeInUnix(customTime);
+    // Para mostrar, convertimos la hora de Brasil a España
+    const brasilTime = moment.tz(`${customTime}`, 'HH:mm', 'America/Sao_Paulo');
+    const spainTime = brasilTime.clone().tz('Europe/Madrid');
+    displayTime = `${customTime} (Brasil) = ${spainTime.format('HH:mm')} (España)`;
+  } else {
+    deathTimeInUnix = convertToTimestamp(getCurrentTime());
+    displayTime = getCurrentTimeInHMFormat();
+  }
 
   // Calcular los tiempos de respawn a partir del tiempo de muerte
   const minRespawnTimeUnix = deathTimeInUnix + minRespawnTimeScheduleInSeconds;
@@ -209,7 +223,7 @@ const setupBossAddedEmbed = (
   // Calcular el tiempo restante hasta el respawn
   const currentTimeInUnix = convertToTimestamp(getCurrentTime());
   const remainingTimeInSeconds = minRespawnTimeUnix - currentTimeInUnix;
-  
+
   // Asegurarnos de que no mostramos tiempo negativo
   const timeToShow = Math.max(0, remainingTimeInSeconds);
 
@@ -219,7 +233,7 @@ const setupBossAddedEmbed = (
     minRespawnTimeIn24H,
     maxRespawnTimeIn24H,
     isFound,
-    customTime,
+    displayTime,
     timeToShow
   );
 
