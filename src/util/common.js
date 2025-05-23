@@ -151,9 +151,9 @@ export const createBossAddedEmbed = (
     .setThumbnail(imageUrl)
     .addFields(
       { name: 'Ubicación', value: location || '--' },
-      { name: 'Min. Respawn (España)', value: minRespawnDisplay || '--', inline: false },
+      { name: 'Min. Respawn', value: minRespawnDisplay || '--', inline: false },
       //{ name: '\u200B', value: '\u200B', inline: true },
-      { name: 'Max. Respawn (España)', value: maxRespawnDisplay || '--', inline: false },
+      { name: 'Max. Respawn', value: maxRespawnDisplay || '--', inline: false },
     )
     .setFooter(
       `Hora de la Muerte: ${deathTimeMsg}`,
