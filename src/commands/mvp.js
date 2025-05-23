@@ -200,38 +200,68 @@ const setupBossAddedEmbed = (
   // Obtener el timestamp Unix para la hora de muerte (actual o personalizada)
   let deathTimeInUnix;
   let displayTime;
+  let minRespawnDisplay, maxRespawnDisplay;
 
   if (customTime) {
-    deathTimeInUnix = getCustomTimeInUnix(customTime);
-    // Para mostrar, convertimos la hora de Brasil a España
-    const brasilTime = moment.tz(`${customTime}`, 'HH:mm', 'America/Sao_Paulo');
-    const spainTime = brasilTime.clone().tz('Europe/Madrid');
-    displayTime = `${customTime} (Brasil) = ${spainTime.format('HH:mm')} (España)`;
+    // Calcular todo desde la hora original del Server
+    const [hours, minutes] = customTime.split(':').map(Number);
+    
+    // Crear la fecha/hora original en el Server
+    let serverDeathTime = moment.tz('America/Sao_Paulo').set({
+      hour: hours,
+      minute: minutes,
+      second: 0,
+      millisecond: 0
+    });
+    
+    // Manejar si la hora ya pasó hoy
+    const nowInServer = moment.tz('America/Sao_Paulo');
+    if (serverDeathTime.isBefore(nowInServer)) {
+      if (nowInServer.diff(serverDeathTime, 'hours') > 4) {
+        serverDeathTime.add(1, 'day');
+      }
+    }
+    
+    // Convertir a España para los cálculos internos
+    const spainDeathTime = serverDeathTime.clone().tz('Europe/Madrid');
+    deathTimeInUnix = spainDeathTime.unix();
+    
+    // Calcular respawn en hora del Server (hora original + tiempo de respawn)
+    const serverMinRespawn = serverDeathTime.clone().add(minRespawnTimeScheduleInSeconds, 'seconds');
+    const serverMaxRespawn = serverDeathTime.clone().add(maxRespawnTimeScheduleInSeconds, 'seconds');
+
+    // Convertir los respawn a España
+    const spainMinRespawn = serverMinRespawn.clone().tz('Europe/Madrid');
+    const spainMaxRespawn = serverMaxRespawn.clone().tz('Europe/Madrid');
+
+    // Formatear para mostrar
+    minRespawnDisplay = `${serverMinRespawn.format('HH:mm')} (Server) / ${spainMinRespawn.format('HH:mm')} (España)`;
+    maxRespawnDisplay = `${serverMaxRespawn.format('HH:mm')} (Server) / ${spainMaxRespawn.format('HH:mm')} (España)`;
+    displayTime = `${customTime} (Server) = ${spainDeathTime.format('HH:mm')} (España)`;
+    
   } else {
+    // Si es hora actual (española), usar el comportamiento original
     deathTimeInUnix = convertToTimestamp(getCurrentTime());
     displayTime = getCurrentTimeInHMFormat();
+    
+    const minRespawnTimeUnix = deathTimeInUnix + minRespawnTimeScheduleInSeconds;
+    const maxRespawnTimeUnix = deathTimeInUnix + maxRespawnTimeScheduleInSeconds;
+    
+    minRespawnDisplay = convertUnixTimeToHMFormat(minRespawnTimeUnix);
+    maxRespawnDisplay = convertUnixTimeToHMFormat(maxRespawnTimeUnix);
   }
-
-  // Calcular los tiempos de respawn a partir del tiempo de muerte
-  const minRespawnTimeUnix = deathTimeInUnix + minRespawnTimeScheduleInSeconds;
-  const maxRespawnTimeUnix = deathTimeInUnix + maxRespawnTimeScheduleInSeconds;
-
-  // Convertir los timestamps Unix de respawn a formato HH:mm
-  const minRespawnTimeIn24H = convertUnixTimeToHMFormat(minRespawnTimeUnix);
-  const maxRespawnTimeIn24H = convertUnixTimeToHMFormat(maxRespawnTimeUnix);
  
-  // Calcular el tiempo restante hasta el respawn
+  // Calcular el tiempo restante hasta el respawn (siempre en hora española)
+  const minRespawnTimeUnix = deathTimeInUnix + minRespawnTimeScheduleInSeconds;
   const currentTimeInUnix = convertToTimestamp(getCurrentTime());
   const remainingTimeInSeconds = minRespawnTimeUnix - currentTimeInUnix;
-
-  // Asegurarnos de que no mostramos tiempo negativo
   const timeToShow = Math.max(0, remainingTimeInSeconds);
 
   isFound = sendBossAddedEmbed(
     message,
     bossList,
-    minRespawnTimeIn24H,
-    maxRespawnTimeIn24H,
+    minRespawnDisplay,
+    maxRespawnDisplay,
     isFound,
     displayTime,
     timeToShow

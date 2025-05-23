@@ -141,8 +141,8 @@ export const sendBossInfoEmbed = (message, data, isFound) => {
 // * returns embed with boss info and its respawn times
 export const createBossAddedEmbed = (
   { bossName, location, imageUrl },
-  minRespawnTimeCalendarFormat,
-  maxRespawnTimeCalendarFormat,
+  minRespawnDisplay,
+  maxRespawnDisplay,
   deathTimeMsg,
 ) => {
   const bossAddedEmbed = new Discord.MessageEmbed()
@@ -151,9 +151,9 @@ export const createBossAddedEmbed = (
     .setThumbnail(imageUrl)
     .addFields(
       { name: 'Ubicación', value: location || '--' },
-      { name: 'Min. Respawn', value: minRespawnTimeCalendarFormat || '--', inline: true },
-      { name: '\u200B', value: '\u200B', inline: true },
-      { name: 'Max. Respawn', value: maxRespawnTimeCalendarFormat || '--', inline: true },
+      { name: 'Min. Respawn (España)', value: minRespawnDisplay || '--', inline: false },
+      //{ name: '\u200B', value: '\u200B', inline: true },
+      { name: 'Max. Respawn (España)', value: maxRespawnDisplay || '--', inline: false },
     )
     .setFooter(
       `Hora de la Muerte: ${deathTimeMsg}`,
@@ -173,18 +173,12 @@ export const sendBossAddedEmbed = (
   customTime = null,
   timeToShow = null,
 ) => {
-  // Preparar el mensaje de tiempo restante
-  const timeRemainingStr = convertSecondstoHMS(timeToShow);
-
-  // Si hay un tiempo personalizado, lo utilizamos en el embed
-  const deathTimeMsg = customTime || getCurrentTimeInHMFormat();
-
   message.channel.send(
     createBossAddedEmbed(
       data,
       minRespawnTimeIn24H,
       maxRespawnTimeIn24H,
-      deathTimeMsg,
+      customTime || getCurrentTimeInHMFormat(),
     ),
   );
 
@@ -194,19 +188,24 @@ export const sendBossAddedEmbed = (
       `¡MVP agregado al tracker con éxito (hora: ${customTime})!\n¡El tiempo de respawn ya ha pasado! El MVP debería estar disponible **ahora**!\nNo se enviarán recordatorios para este MVP.`,
     );
   } else {
-    let successMsg = `¡MVP agregado al tracker con éxito!\n¡Avisaré dentro de **${convertSecondstoHMS(
-      data.minRespawnTimeScheduleInSeconds,
-    )}**!\nTambién avisaré cuando falten **5 minutos** para que reaparezca.`;
-
-    // Si se usó una hora personalizada, mencionarlo en el mensaje
+    let successMsg;
+    
     if (customTime) {
-      successMsg = `¡MVP agregado al tracker con hora personalizada (${customTime})!\n¡Avisaré dentro de **${timeRemainingStr}**!\nTambién avisaré cuando falten **5 minutos** para que reaparezca.`;
+      // Si se usó una hora personalizada, mostrar el tiempo de respawn del MVP (no el tiempo restante)
+      const respawnTimeStr = convertSecondstoHMS(data.minRespawnTimeScheduleInSeconds);
+      successMsg = `¡MVP agregado al tracker con hora personalizada (${customTime})!\n¡Avisaré dentro de **${respawnTimeStr}**!\nTambién avisaré cuando falten **5 minutos** para que reaparezca.`;
+    } else {
+      // Si es hora actual, mostrar el tiempo de respawn del MVP
+      const respawnTimeStr = convertSecondstoHMS(data.minRespawnTimeScheduleInSeconds);
+      successMsg = `¡MVP agregado al tracker con éxito!\n¡Avisaré dentro de **${respawnTimeStr}**!\nTambién avisaré cuando falten **5 minutos** para que reaparezca.`;
     }
+    
     message.channel.send(successMsg);
   }
 
+
   isFound = true;
-  
+
   return isFound;
 };
 
