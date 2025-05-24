@@ -28,6 +28,10 @@ const checkMvpRespawnTimers = () => {
   setInterval(() => {
     let currentTime = convertToTimestamp(getCurrentTime());
     for (let i = 0; i < bossList.bosses.length; i++) {
+      // Verificar que el boss tiene timestamps válidos antes de procesar
+      if (!bossList.bosses[i].deathTime || !bossList.bosses[i].minRespawnTime) {
+        continue; // Saltar este boss si no tiene tiempo de muerte registrado
+      }
 
       // → AVISO a 5 minutos
       // Ajusta 5*60 si tus timestamps están en segundos, o 5*60*1000 si son milisegundos.

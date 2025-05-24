@@ -24,11 +24,12 @@ Para ver una lista con todos los comandos disponibles.
 
 Para ver información sobre un MVP específico.
 
-### $mvp add "bossname"
+### $mvp add "bossname" [HH:MM]
 ![info](img/add.PNG)
 
 
-Para agregar un MVP a la lista de seguimiento.
+Para agregar un MVP a la lista de seguimiento. 
+Opcional: puedes especificar la hora (formato 24h) en que murió el MVP. Ejemplo: $mvp add TestMob 18:07.
 
 
 ![info](img/remind.PNG)

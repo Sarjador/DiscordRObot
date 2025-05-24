@@ -6,6 +6,34 @@ import moment from 'moment-timezone';
 // * Select the timezone
 moment.tz.setDefault('Europe/Madrid');
 
+// Función para convertir una hora específica (HH:MM) de Brasil a timestamp Unix en hora española
+function getCustomTimeInUnix(timeString) {
+  const [hours, minutes] = timeString.split(':').map(Number);
+
+  // Crear la fecha/hora en timezone de São Paulo (Brasil) para HOY (ROLatam)
+  let brasilTime = moment.tz('America/Sao_Paulo').set({
+    hour: hours,
+    minute: minutes,
+    second: 0,
+    millisecond: 0
+  });
+  // Si la hora proporcionada ya ha pasado hoy en Brasil, consideramos dos opciones:
+  const nowInBrasil = moment.tz('America/Sao_Paulo');
+  if (brasilTime.isBefore(nowInBrasil)) {
+    // Si la diferencia es grande (más de 4 horas), asumimos que es para mañana
+    if (nowInBrasil.diff(brasilTime, 'hours') > 4) {
+      brasilTime.add(1, 'day');
+    }
+  }
+   // Convertir a timezone de Madrid (España)
+  const spainTime = brasilTime.clone().tz('Europe/Madrid');
+  
+  console.log(`Hora Brasil: ${brasilTime.format('HH:mm DD/MM')} -> Hora España: ${spainTime.format('HH:mm DD/MM')}`);
+  
+  return spainTime.unix();
+}
+
+
 // * parameters = time
 // * returns a number separated with commas
 export const addNumberWithCommas = (x) => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -113,8 +141,9 @@ export const sendBossInfoEmbed = (message, data, isFound) => {
 // * returns embed with boss info and its respawn times
 export const createBossAddedEmbed = (
   { bossName, location, imageUrl },
-  minRespawnTimeCalendarFormat,
-  maxRespawnTimeCalendarFormat,
+  minRespawnDisplay,
+  maxRespawnDisplay,
+  deathTimeMsg,
 ) => {
   const bossAddedEmbed = new Discord.MessageEmbed()
     .setColor('#0xf44336')
@@ -122,35 +151,61 @@ export const createBossAddedEmbed = (
     .setThumbnail(imageUrl)
     .addFields(
       { name: 'Ubicación', value: location || '--' },
-      { name: 'Min. Respawn', value: minRespawnTimeCalendarFormat || '--', inline: true },
-      { name: '\u200B', value: '\u200B', inline: true },
-      { name: 'Max. Respawn', value: maxRespawnTimeCalendarFormat || '--', inline: true },
+      { name: 'Min. Respawn', value: minRespawnDisplay || '--', inline: false },
+      //{ name: '\u200B', value: '\u200B', inline: true },
+      { name: 'Max. Respawn', value: maxRespawnDisplay || '--', inline: false },
     )
     .setFooter(
-      `Hora de la Muerte: ${getCurrentTimeInHMFormat()}`,
+      `Hora de la Muerte: ${deathTimeMsg}`,
       'https://file5s.ratemyserver.net/mobs/1179.gif',
     );
   return bossAddedEmbed;
 };
 
-// * parameters = message, boss data, min respawn time, max respawn time, isFound
+// * parameters = message, boss data, min respawn time, max respawn time, isFound, customTime
 // * returns isFound result and sends boss info embed
 export const sendBossAddedEmbed = (
   message,
   data,
-  minRespawnTimeCalendarFormat,
-  maxRespawnTimeCalendarFormat,
+  minRespawnTimeIn24H,
+  maxRespawnTimeIn24H,
   isFound,
+  customTime = null,
+  timeToShow = null,
 ) => {
   message.channel.send(
-    createBossAddedEmbed(data, minRespawnTimeCalendarFormat, maxRespawnTimeCalendarFormat),
+    createBossAddedEmbed(
+      data,
+      minRespawnTimeIn24H,
+      maxRespawnTimeIn24H,
+      customTime || getCurrentTimeInHMFormat(),
+    ),
   );
-  message.channel.send(
-    `¡MVP agregado al tracker con éxito!\n¡Avisaré dentro de **${convertSecondstoHMS(
-      data.minRespawnTimeScheduleInSeconds,
-    )}**!\nTambién avisaré cuando falten **5 minutos** para que respawnee.`,
-  );
+
+  // Mensaje basado en si ya pasó el tiempo de respawn o no
+  if (timeToShow <= 0) {
+    message.channel.send(
+      `¡MVP agregado al tracker con éxito (hora: ${customTime})!\n¡El tiempo de respawn ya ha pasado! El MVP debería estar disponible **ahora**!\nNo se enviarán recordatorios para este MVP.`,
+    );
+  } else {
+    let successMsg;
+    
+    if (customTime) {
+      // Si se usó una hora personalizada, mostrar el tiempo de respawn del MVP (no el tiempo restante)
+      const respawnTimeStr = convertSecondstoHMS(data.minRespawnTimeScheduleInSeconds);
+      successMsg = `¡MVP agregado al tracker con hora personalizada (${customTime})!\n¡Avisaré dentro de **${respawnTimeStr}**!\nTambién avisaré cuando falten **5 minutos** para que reaparezca.`;
+    } else {
+      // Si es hora actual, mostrar el tiempo de respawn del MVP
+      const respawnTimeStr = convertSecondstoHMS(data.minRespawnTimeScheduleInSeconds);
+      successMsg = `¡MVP agregado al tracker con éxito!\n¡Avisaré dentro de **${respawnTimeStr}**!\nTambién avisaré cuando falten **5 minutos** para que reaparezca.`;
+    }
+    
+    message.channel.send(successMsg);
+  }
+
+
   isFound = true;
+
   return isFound;
 };
 
@@ -187,14 +242,21 @@ export const convertUnixTimeToHMFormat = (time) => moment.unix(time).format('HH:
 // * returns time in HM A format
 export const convertUnixTimeToHMAFormat = (time) => moment.unix(time).format('HH:MM A');
 
-
 // * parameters = time in seconds
 // * returns = added time in calendar format
 export const addTimeInSecondsToCalendarFormat = (time) => moment().add(time, 'seconds').calendar();
 
-// * parameters = time in seconds
+// * parameters = time in seconds, baseTimestamp (opcional)
 // * returns = added time in unix format
-export const addTimeInSecondsToUnixFormat = (time) => moment().add(time, 'seconds').unix();
+export const addTimeInSecondsToUnixFormat = (time, baseTimestamp = null) => {
+  if (baseTimestamp) {
+    // Si se proporciona un timestamp base, lo usamos como punto de partida
+    return moment.unix(baseTimestamp).add(time, 'seconds').unix();
+  } else {
+    // Comportamiento original (usa el tiempo actual)
+    return moment().add(time, 'seconds').unix();
+  }
+};
 
 // * parameters = time in seconds
 // * returns time in milliseconds
