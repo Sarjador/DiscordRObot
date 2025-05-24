@@ -2,6 +2,7 @@ import {
   checkAlias,
   checkInput,
   getCurrentTime,
+  getCurrentTimeInHMFormat ,
   convertToTimestamp,
   convertUnixTimeToHMFormat,
   convertUnixTimeToHMAFormat,
@@ -170,20 +171,30 @@ function isValidTimeFormat(timeString) {
 // Función para convertir una hora específica (HH:MM) a timestamp Unix
 function getCustomTimeInUnix(timeString) {
   const [hours, minutes] = timeString.split(':').map(Number);
-  const customTime = new Date();
-  customTime.setHours(hours, minutes, 0, 0);
-  
-  // Si la hora proporcionada ya ha pasado hoy, consideramos dos opciones:
-  const now = new Date();
-  if (customTime < now) {
+
+  // Crear la fecha/hora en timezone de São Paulo (Brasil) para HOY
+  let serverTime = moment.tz('America/Sao_Paulo').set({
+    hour: hours,
+    minute: minutes,
+    second: 0,
+    millisecond: 0
+  });
+
+  // Si la hora proporcionada ya ha pasado hoy en Brasil, consideramos dos opciones:
+  const nowInServer = moment.tz('America/Sao_Paulo');
+  if (serverTime.isBefore(nowInServer)) {
     // Si la diferencia es grande (más de 4 horas), asumimos que es para mañana
-    if ((now - customTime) > 240 * 60 * 1000) {
-      customTime.setDate(customTime.getDate() + 1);
+    if (nowInServer.diff(serverTime, 'hours') > 4) {
+      serverTime.add(1, 'day');
     }
-    // Si es menos de 4 horas, asumimos que es tiempo reciente y lo dejamos tal cual
   }
   
-  return convertToTimestamp(customTime);
+  // Convertir a timezone de Madrid (España)
+  const spainTime = serverTime.clone().tz('Europe/Madrid');
+
+  console.log(`Hora Servidor: ${serverTime.format('HH:mm DD/MM')} -> Hora España: ${spainTime.format('HH:mm DD/MM')}`);
+
+  return spainTime.unix();
 }
 
 // * parameter = boss data
