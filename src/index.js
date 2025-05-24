@@ -133,7 +133,7 @@ const onMessageReceived = (message) => {
 
 discordClient.once(events.READY, onReady);
 discordClient.on(events.MESSAGE, onMessageReceived);
-discordClient.login(`${process.env.TEST_TOKEN}`)
+discordClient.login(`${process.env.TOKEN}`)
   .then(() => console.log('Conectado a Discord!'))
   .catch(err => console.error('Error al conectar:', err));
 
