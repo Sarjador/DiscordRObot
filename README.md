@@ -22,7 +22,7 @@ Cuando introduces una hora, el bot la interpreta como **hora del servidor** y au
 
 ### Comandos Básicos
 ```
-$help                           # Ver todos los comandos
+$help                          # Ver todos los comandos
 $info <nombre_mvp>             # Información de un MVP específico
 $mvp list                      # Lista de MVPs en seguimiento
 $mvp clear                     # Limpiar lista (solo tras reinicio server)
